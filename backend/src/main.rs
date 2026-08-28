@@ -19,7 +19,7 @@ use axum::{
     routing::{get, post, put},
     Router,
 };
-use sqlx::{postgres::PgPoolOptions, PgPool};
+use sqlx::{postgres::{PgConnectOptions, PgPoolOptions}, PgPool};
 use tower_http::{
     cors::{Any, CorsLayer},
     trace::TraceLayer,
@@ -55,7 +55,10 @@ async fn main() -> anyhow::Result<()> {
     // Pool PostgreSQL — o Supabase gerencia persistência e concorrência
     let db = PgPoolOptions::new()
         .max_connections(10)
-        .connect(&config.database_url)
+        .connect_with(
+            config.database_url.parse::<PgConnectOptions>()?
+                .statement_cache_capacity(0),
+        )
         .await?;
 
     // Roda as migrations automaticamente no startup
