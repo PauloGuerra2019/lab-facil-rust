@@ -25,8 +25,7 @@ pub async fn listar(
     let apenas_ativos_num: i64 = if filtro.apenas_ativos.unwrap_or(true) { 1 } else { 0 };
     let busca = filtro.busca.as_deref().map(|b| format!("%{b}%"));
 
-    let clientes = sqlx::query_as!(
-        Cliente,
+    let clientes = sqlx::query_as::<_, Cliente>(
         r#"
         SELECT id as "id!", nome, cpf_cnpj, telefone, email, endereco, observacoes,
                ativo as "ativo!: bool"
@@ -35,9 +34,11 @@ pub async fn listar(
                     AND ($2 IS NULL OR nome LIKE $3 OR cpf_cnpj LIKE $4)
         ORDER BY nome
         "#,
-        apenas_ativos_num,
-        busca, busca, busca
     )
+    .bind(apenas_ativos_num)
+    .bind(&busca)
+    .bind(&busca)
+    .bind(&busca)
     .fetch_all(&state.db)
     .await?;
 
@@ -50,16 +51,18 @@ pub async fn criar(
     _claims: Claims,
     Json(payload): Json<ClientePayload>,
 ) -> Result<(StatusCode, Json<Cliente>)> {
-    let id = sqlx::query!(
+    let id = sqlx::query_scalar::<_, i64>(
         "INSERT INTO clientes (nome, cpf_cnpj, telefone, email, endereco, observacoes)
          VALUES ($1, $2, $3, $4, $5, $6)
-         RETURNING id",
-        payload.nome, payload.cpf_cnpj, payload.telefone,
-        payload.email, payload.endereco, payload.observacoes
+            RETURNING id"
     )
-    .execute(&state.db)
-    .await?
-    .fetch_one(&state.db)
+        .bind(payload.nome)
+        .bind(payload.cpf_cnpj)
+        .bind(payload.telefone)
+        .bind(payload.email)
+        .bind(payload.endereco)
+        .bind(payload.observacoes)
+        .fetch_one(&state.db)
     .await?
     .id;
 
@@ -84,13 +87,18 @@ pub async fn atualizar(
     _claims: Claims,
     Json(payload): Json<ClientePayload>,
 ) -> Result<Json<Cliente>> {
-    sqlx::query!(
+    sqlx::query(
         "UPDATE clientes SET nome=$1, cpf_cnpj=$2, telefone=$3, email=$4, endereco=$5, observacoes=$6
          WHERE id=$7",
         payload.nome, payload.cpf_cnpj, payload.telefone,
-        payload.email, payload.endereco, payload.observacoes,
-        id
     )
+    .bind(payload.nome)
+    .bind(payload.cpf_cnpj)
+    .bind(payload.telefone)
+    .bind(payload.email)
+    .bind(payload.endereco)
+    .bind(payload.observacoes)
+    .bind(id)
     .execute(&state.db)
     .await?;
 
@@ -104,7 +112,8 @@ pub async fn desativar(
     Path(id): Path<i64>,
     _claims: Claims,
 ) -> Result<StatusCode> {
-    let linhas = sqlx::query!("UPDATE clientes SET ativo=FALSE WHERE id=$1", id)
+    let linhas = sqlx::query("UPDATE clientes SET ativo=FALSE WHERE id=$1")
+        .bind(id)
         .execute(&state.db)
         .await?
         .rows_affected();
@@ -118,13 +127,12 @@ pub async fn desativar(
 // ── helpers ───────────────────────────────────────────────────────────────────
 
 async fn buscar_por_id(state: &AppState, id: i64) -> Result<Cliente> {
-    sqlx::query_as!(
-        Cliente,
+    sqlx::query_as::<_, Cliente>(
         r#"SELECT id as "id!", nome, cpf_cnpj, telefone, email, endereco, observacoes,
                   ativo as "ativo!: bool"
-           FROM clientes WHERE id = $1"#,
-        id
+            FROM clientes WHERE id = $1"#
     )
+        .bind(id)
     .fetch_optional(&state.db)
     .await?
     .ok_or_else(|| AppError::NotFound(format!("Cliente {id} não encontrado")))

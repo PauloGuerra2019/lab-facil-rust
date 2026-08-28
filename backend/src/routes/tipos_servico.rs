@@ -33,15 +33,16 @@ pub async fn criar(
     _claims: Claims,
     Json(p): Json<TipoServicoPayload>,
 ) -> Result<(StatusCode, Json<TipoServico>)> {
-    let id = sqlx::query!(
+    let id = sqlx::query_as::<_, (i64,)>(
         "INSERT INTO tipos_servico (nome, categoria, valor_padrao, prazo_dias) VALUES ($1,$2,$3,$4) RETURNING id",
-        p.nome, p.categoria, p.valor_padrao, p.prazo_dias
     )
-    .execute(&state.db)
-    .await?
+    .bind(p.nome)
+    .bind(p.categoria)
+    .bind(p.valor_padrao)
+    .bind(p.prazo_dias as i32)
     .fetch_one(&state.db)
     .await?
-    .id;
+    .0;
 
     let tipo = buscar_tipo(&state, id).await?;
     Ok((StatusCode::CREATED, Json(tipo)))
@@ -55,7 +56,7 @@ pub async fn atualizar(
 ) -> Result<Json<TipoServico>> {
     sqlx::query!(
         "UPDATE tipos_servico SET nome=$1, categoria=$2, valor_padrao=$3, prazo_dias=$4 WHERE id=$5",
-        p.nome, p.categoria, p.valor_padrao, p.prazo_dias, id
+        p.nome, p.categoria, p.valor_padrao, p.prazo_dias as i32, id
     )
     .execute(&state.db)
     .await?;

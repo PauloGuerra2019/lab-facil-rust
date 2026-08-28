@@ -126,11 +126,12 @@ pub async fn emitir_nfse(
         return Ok(Json(buscar_ordem(&state, id).await?));
     }
 
-    let numero: i64 = sqlx::query_scalar!(
-        "SELECT COALESCE(MAX(CAST(nfse_numero AS INTEGER)), 0) + 1 FROM ordens_servico"
+    let numero: i64 = sqlx::query_scalar::<_, Option<i64>>(
+        "SELECT MAX(CAST(nfse_numero AS BIGINT)) FROM ordens_servico"
     )
     .fetch_one(&state.db)
-    .await?;
+    .await?
+    .unwrap_or(0) + 1;
     let nfse_numero = format!("{numero:08}");
     let nfse_chave = format!("NFSE-{}-{:08}", Local::now().format("%Y%m%d"), atual.numero);
     let nfse_data_emissao = Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
@@ -276,7 +277,7 @@ async fn proximo_numero(state: &AppState) -> Result<i64> {
     let row = sqlx::query!("SELECT COALESCE(MAX(numero), 0) AS max FROM ordens_servico")
         .fetch_one(&state.db)
         .await?;
-    Ok(row.max + 1)
+    Ok(row.max.unwrap_or(0) + 1)
 }
 
 async fn inserir_itens(state: &AppState, ordem_id: i64, itens: &[ItemOSPayload]) -> Result<()> {

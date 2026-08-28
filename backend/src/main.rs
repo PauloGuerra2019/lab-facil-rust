@@ -124,24 +124,24 @@ async fn main() -> anyhow::Result<()> {
 async fn seed_admin(db: &PgPool, _config: &Config) -> anyhow::Result<()> {
     let hash = auth::hash_senha("admin123")?;
 
-    let alterado = sqlx::query!(
+    let alterado = sqlx::query(
         "UPDATE usuarios SET senha_hash = $1 WHERE email = 'admin@laboratorio.com' AND (senha_hash = '$placeholder$' OR senha_hash LIKE '%placeholder%')",
-        hash
     )
+    .bind(hash.clone())
     .execute(db)
     .await?
     .rows_affected();
 
-    let existe = sqlx::query_scalar!("SELECT COUNT(*) FROM usuarios WHERE email = 'admin@laboratorio.com'")
+    let existe = sqlx::query_scalar::<_, i64>("SELECT COUNT(*)::BIGINT FROM usuarios WHERE email = 'admin@laboratorio.com'")
         .fetch_one(db)
         .await?;
 
     if existe == 0 {
-           sqlx::query!(
+              sqlx::query(
             "INSERT INTO usuarios (nome, email, senha_hash, role)
              VALUES ('Administrador', 'admin@laboratorio.com', $1, 'admin')",
-            hash
         )
+          .bind(hash)
         .execute(db)
         .await?;
 

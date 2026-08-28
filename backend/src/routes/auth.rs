@@ -47,12 +47,11 @@ pub async fn login(
     let email = payload.email.trim();
 
     // 1. Busca o usuário pelo e-mail
-    let usuario = sqlx::query_as!(
-        Usuario,
+    let usuario = sqlx::query_as::<_, Usuario>(
         "SELECT id as \"id!\", nome, email, senha_hash, role, ativo as \"ativo!: bool\"
          FROM usuarios WHERE email = $1 AND ativo = TRUE",
-        email
     )
+    .bind(email)
     .fetch_optional(&state.db)
     .await?
     .ok_or(AppError::Unauthorized)?;
@@ -82,12 +81,11 @@ pub async fn me(
     State(state): State<Arc<AppState>>,
     claims: Claims,
 ) -> Result<Json<UsuarioOut>> {
-    let usuario = sqlx::query_as!(
-        Usuario,
+    let usuario = sqlx::query_as::<_, Usuario>(
         "SELECT id as \"id!\", nome, email, senha_hash, role, ativo as \"ativo!: bool\"
          FROM usuarios WHERE id = $1",
-        claims.sub
     )
+    .bind(claims.sub)
     .fetch_optional(&state.db)
     .await?
     .ok_or_else(|| AppError::NotFound("Usuário não encontrado".into()))?;
