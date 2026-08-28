@@ -89,7 +89,6 @@ pub async fn atualizar(
     sqlx::query(
         "UPDATE clientes SET nome=$1, cpf_cnpj=$2, telefone=$3, email=$4, endereco=$5, observacoes=$6
          WHERE id=$7",
-        payload.nome, payload.cpf_cnpj, payload.telefone,
     )
     .bind(payload.nome)
     .bind(payload.cpf_cnpj)

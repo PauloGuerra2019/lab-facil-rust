@@ -21,7 +21,7 @@ pub async fn listar(
     let tipos = sqlx::query_as!(
         TipoServico,
         r#"SELECT id as "id!", nome, categoria, valor_padrao as "valor_padrao!", prazo_dias as "prazo_dias!", ativo as "ativo!: bool"
-           FROM tipos_servico WHERE ativo = 1 ORDER BY categoria, nome"#
+           FROM tipos_servico WHERE ativo = TRUE ORDER BY categoria, nome"#
     )
     .fetch_all(&state.db)
     .await?;

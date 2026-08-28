@@ -38,10 +38,10 @@ pub async fn listar(
                os.nfse_numero, os.nfse_status as "nfse_status!", os.nfse_chave, os.nfse_data_emissao, os.nfse_mensagem
         FROM ordens_servico os
         JOIN clientes c ON c.id = os.cliente_id
-                WHERE ($1 IS NULL OR os.status = $2)
-                    AND ($3 IS NULL OR os.cliente_id = $4)
-                    AND ($5 IS NULL OR os.paciente_nome LIKE $6 OR c.nome LIKE $7)
-                    AND ($8 = 0 OR (os.data_prevista < $9 AND os.status NOT IN ('entregue','cancelado')))
+                WHERE ($1::TEXT IS NULL OR os.status = $2::TEXT)
+                    AND ($3::BIGINT IS NULL OR os.cliente_id = $4::BIGINT)
+                    AND ($5::TEXT IS NULL OR os.paciente_nome LIKE $6::TEXT OR c.nome LIKE $7::TEXT)
+                    AND ($8::BIGINT = 0 OR (os.data_prevista < $9::TEXT AND os.status NOT IN ('entregue','cancelado')))
         ORDER BY os.numero DESC
         "#,
         filtro.status, filtro.status,
