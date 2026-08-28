@@ -63,8 +63,7 @@ pub async fn criar(
         .bind(payload.endereco)
         .bind(payload.observacoes)
         .fetch_one(&state.db)
-    .await?
-    .id;
+    .await?;
 
     let cliente = buscar_por_id(&state, id).await?;
     Ok((StatusCode::CREATED, Json(cliente)))

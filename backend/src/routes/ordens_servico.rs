@@ -67,7 +67,7 @@ pub async fn criar(
 ) -> Result<(StatusCode, Json<OrdemServicoOut>)> {
     let numero = proximo_numero(&state).await?;
 
-    let id = sqlx::query!(
+    let id = sqlx::query_scalar::<_, i64>(
         r#"
         INSERT INTO ordens_servico
             (numero, cliente_id, paciente_nome, cor_dente, data_entrada, data_prevista, observacoes)
@@ -82,11 +82,15 @@ pub async fn criar(
         payload.data_prevista,
         payload.observacoes,
     )
-    .execute(&state.db)
-    .await?
+    .bind(numero)
+    .bind(payload.cliente_id)
+    .bind(payload.paciente_nome)
+    .bind(payload.cor_dente)
+    .bind(payload.data_entrada)
+    .bind(payload.data_prevista)
+    .bind(payload.observacoes)
     .fetch_one(&state.db)
-    .await?
-    .id;
+    .await?;
 
     inserir_itens(&state, id, &payload.itens).await?;
 
