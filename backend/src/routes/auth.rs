@@ -48,7 +48,7 @@ pub async fn login(
 
     // 1. Busca o usuário pelo e-mail
     let usuario = sqlx::query_as::<_, Usuario>(
-        "SELECT id as \"id!\", nome, email, senha_hash, role, ativo as \"ativo!: bool\"
+        "SELECT id, nome, email, senha_hash, role, ativo
          FROM usuarios WHERE email = $1 AND ativo = TRUE",
     )
     .bind(email)
@@ -82,7 +82,7 @@ pub async fn me(
     claims: Claims,
 ) -> Result<Json<UsuarioOut>> {
     let usuario = sqlx::query_as::<_, Usuario>(
-        "SELECT id as \"id!\", nome, email, senha_hash, role, ativo as \"ativo!: bool\"
+        "SELECT id, nome, email, senha_hash, role, ativo
          FROM usuarios WHERE id = $1",
     )
     .bind(claims.sub)
