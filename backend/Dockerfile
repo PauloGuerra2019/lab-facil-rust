@@ -2,6 +2,10 @@
 FROM rust:1-slim AS builder
 WORKDIR /app
 
+# SQLx precisa da URL para validar as queries durante a compilação.
+ARG DATABASE_URL
+ENV DATABASE_URL=${DATABASE_URL}
+
 RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
 
 # Cache das dependências primeiro (Docker layer cache)
