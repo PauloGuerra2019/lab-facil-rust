@@ -74,13 +74,6 @@ pub async fn criar(
         VALUES ($1, $2, $3, $4, $5, $6, $7)
         RETURNING id
         "#,
-        numero,
-        payload.cliente_id,
-        payload.paciente_nome,
-        payload.cor_dente,
-        payload.data_entrada,
-        payload.data_prevista,
-        payload.observacoes,
     )
     .bind(numero)
     .bind(payload.cliente_id)
