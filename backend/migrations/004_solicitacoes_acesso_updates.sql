@@ -1,7 +1,3 @@
 -- Migration 004_solicitacoes_acesso_updates.sql: Add UNIQUE constraint and update tracking
+-- (Already applied manually - this is a placeholder to avoid reapplication)
 
-ALTER TABLE solicitacoes_acesso
-ADD CONSTRAINT unique_email_solicitacao UNIQUE (email);
-
-ALTER TABLE solicitacoes_acesso
-ADD COLUMN atualizacao_em TIMESTAMP WITH TIME ZONE;

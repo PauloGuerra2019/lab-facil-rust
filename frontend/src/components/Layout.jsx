@@ -20,8 +20,8 @@ export default function Layout() {
   const { usuario, logout } = useAuth();
 
   return (
-    <div className="min-h-screen min-w-[1200px] flex bg-porcelain">
-      <aside className="w-64 shrink-0 bg-teal-dark text-white flex flex-col">
+    <div className="min-h-screen flex flex-col lg:flex-row bg-porcelain">
+      <aside className="w-full lg:w-64 shrink-0 bg-teal-dark text-white flex flex-col lg:min-h-screen">
         <div className="flex items-center gap-2 px-6 py-6 border-b border-white/10">
           <Stethoscope size={22} className="text-white/80" />
           <div>

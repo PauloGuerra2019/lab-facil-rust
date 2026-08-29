@@ -22,6 +22,11 @@ services:
       JWT_SECRET: ${JWT_SECRET:-lab-facil-rust-chave-secreta-desenvolvimento-2026-super-segura}
       CORS_ORIGIN: http://localhost:5173
       APROVACAO_EMAIL: ${APROVACAO_EMAIL:-contato@dadg.com.br}
+      SMTP_HOST: ${SMTP_HOST:-live.smtp.mailtrap.io}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USERNAME: ${SMTP_USERNAME:-api}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM: ${SMTP_FROM:-hello@dadglab.vercel.app}
     depends_on:
       - db
 
