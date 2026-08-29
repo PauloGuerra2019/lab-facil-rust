@@ -1,6 +1,11 @@
 // src/routes/auth.rs
 
 use axum::{extract::State, Json};
+use lettre::{
+    message::{Mailbox, SinglePart},
+    transport::smtp::authentication::Credentials,
+    Message, SmtpTransport, Transport,
+};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
@@ -82,6 +87,80 @@ pub async fn login(
     }))
 }
 
+fn enviar_email_solicitacao(
+    config: &crate::config::Config,
+    nome: &str,
+    email: &str,
+    empresa: Option<&str>,
+    telefone: Option<&str>,
+    mensagem: Option<&str>,
+) -> Result<()> {
+    let Some(smtp_host) = config.smtp_host.as_deref() else {
+        tracing::warn!(
+            "SMTP não configurado; solicitação registrada apenas no banco para {}",
+            email
+        );
+        return Ok(());
+    };
+
+    let from = config
+        .smtp_from
+        .as_deref()
+        .unwrap_or(config.aprovacao_email.as_str())
+        .parse::<Mailbox>()
+        .map_err(|e| AppError::BadRequest(format!("E-mail de origem inválido: {e}")))?;
+
+    let to = config.aprovacao_email.parse::<Mailbox>().map_err(|e| {
+        AppError::BadRequest(format!("E-mail de aprovação inválido: {e}"))
+    })?;
+
+    let detalhes = [
+        format!("Nome: {nome}"),
+        format!("E-mail: {email}"),
+        empresa.map(|v| format!("Empresa: {v}")).unwrap_or_default(),
+        telefone.map(|v| format!("Telefone: {v}")).unwrap_or_default(),
+        mensagem.map(|v| format!("Mensagem: {v}")).unwrap_or_default(),
+    ]
+    .into_iter()
+    .filter(|v| !v.is_empty())
+    .collect::<Vec<_>>()
+    .join("\n");
+
+    let email_body = format!(
+        "Nova solicitação de acesso no sistema DADG.\n\n{detalhes}\n"
+    );
+
+    let message = Message::builder()
+        .from(from)
+        .to(to)
+        .subject("Nova solicitação de acesso - DADG")
+        .singlepart(SinglePart::plain(email_body))
+        .map_err(|e| AppError::BadRequest(format!("Falha ao montar e-mail: {e}")))?;
+
+    let creds = Credentials::new(
+        config
+            .smtp_username
+            .clone()
+            .unwrap_or_else(|| "".into()),
+        config
+            .smtp_password
+            .clone()
+            .unwrap_or_else(|| "".into()),
+    );
+
+    let mailer = SmtpTransport::relay(smtp_host)
+        .map_err(|e| AppError::BadRequest(format!("SMTP inválido: {e}")))?
+        .port(config.smtp_port)
+        .credentials(creds)
+        .build();
+
+    mailer
+        .send(&message)
+        .map_err(|e| AppError::BadRequest(format!("Falha ao enviar e-mail: {e}")))?;
+
+    Ok(())
+}
+
 /// POST /auth/solicitar-acesso
 /// Registra uma solicitação de cadastro e aguarda aprovação manual.
 pub async fn solicitar_acesso(
@@ -125,6 +204,17 @@ pub async fn solicitar_acesso(
     .bind(mensagem)
     .execute(&state.db)
     .await?;
+
+    if let Err(err) = enviar_email_solicitacao(
+        &state.config,
+        nome,
+        email,
+        empresa,
+        telefone,
+        mensagem,
+    ) {
+        tracing::warn!("Solicitação salva, mas e-mail de aprovação não pôde ser enviado: {err}");
+    }
 
     tracing::info!(
         "Nova solicitação de acesso recebida para {} (aprovação por: {})",

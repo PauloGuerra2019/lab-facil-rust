@@ -10,6 +10,7 @@ const ambienteDev = import.meta.env.DEV;
 
 export default function Login() {
   const { login, usuario } = useAuth();
+  const [modo, setModo] = useState("login");
   const [email, setEmail] = useState(ambienteDev ? "admin@laboratorio.com" : "");
   const [senha, setSenha] = useState("");
   const [form, setForm] = useState({
@@ -77,15 +78,22 @@ export default function Login() {
           <span className="font-display text-xl text-center">DADG - Laboratório de prótese dentária</span>
         </div>
 
-        <form onSubmit={ambienteDev ? handleSubmit : handleSolicitacao} className="card p-7 space-y-4">
+        <form
+          onSubmit={modo === "login" ? handleSubmit : handleSolicitacao}
+          className="card p-7 space-y-4"
+        >
           <div>
-            <h1 className="font-display text-xl mb-1">{ambienteDev ? "Entrar" : "Solicitar acesso"}</h1>
+            <h1 className="font-display text-xl mb-1">
+              {modo === "login" ? "Entrar" : "Solicitar acesso"}
+            </h1>
             <p className="text-sm text-ink/50">
-              {ambienteDev ? "Acesse o painel do laboratório" : "Cadastre sua empresa e aguarde a aprovação por e-mail"}
+              {modo === "login"
+                ? "Acesse o painel do laboratório"
+                : "Cadastre sua empresa e aguarde a aprovação"}
             </p>
           </div>
 
-          {ambienteDev ? (
+          {modo === "login" ? (
             <>
               <div>
                 <label className="label">E-mail</label>
@@ -108,7 +116,7 @@ export default function Login() {
                   className="input"
                   value={senha}
                   onChange={(e) => setSenha(e.target.value)}
-                  placeholder="admin123 (usuário padrão inicial)"
+                  placeholder={ambienteDev ? "admin123 (usuário padrão inicial)" : ""}
                 />
               </div>
             </>
@@ -170,19 +178,25 @@ export default function Login() {
           {erro && <p className="text-sm text-brick">{erro}</p>}
           {sucesso && <p className="text-sm text-sage">{sucesso}</p>}
 
-          {ambienteDev ? (
-            <button type="submit" disabled={enviando} className="btn-primary w-full justify-center">
-              {enviando ? "Entrando…" : "Entrar"}
-            </button>
-          ) : (
-            <button type="submit" disabled={enviando} className="btn-primary w-full justify-center">
-              {enviando ? "Enviando…" : "Solicitar acesso"}
-            </button>
-          )}
+          <button type="submit" disabled={enviando} className="btn-primary w-full justify-center">
+            {enviando ? (modo === "login" ? "Entrando…" : "Enviando…") : modo === "login" ? "Entrar" : "Solicitar acesso"}
+          </button>
 
-          {!ambienteDev && (
+          <button
+            type="button"
+            onClick={() => {
+              setErro("");
+              setSucesso("");
+              setModo((atual) => (atual === "login" ? "cadastro" : "login"));
+            }}
+            className="btn-secondary w-full justify-center"
+          >
+            {modo === "login" ? "Cadastre-se aqui" : "Voltar para login"}
+          </button>
+
+          {modo === "cadastro" && (
             <div className="text-center text-xs text-ink/50">
-              Ou envie diretamente para <a href={`mailto:${cadastroEmail}`} className="text-teal underline">{cadastroEmail}</a>
+              Também pode enviar diretamente para <span className="text-teal">{cadastroEmail}</span>
             </div>
           )}
         </form>

@@ -8,6 +8,11 @@ pub struct Config {
     pub jwt_expiration_hours:      u64,
     pub cors_origin:               String,
     pub aprovacao_email:           String,
+    pub smtp_host:                 Option<String>,
+    pub smtp_port:                 u16,
+    pub smtp_username:             Option<String>,
+    pub smtp_password:             Option<String>,
+    pub smtp_from:                 Option<String>,
 
     // Dados do laboratório (usados no PDF/recibo)
     pub lab_nome:      String,
@@ -33,6 +38,14 @@ impl Config {
                                         .unwrap_or_else(|_| "http://localhost:5173".into()),
             aprovacao_email:        env::var("APROVACAO_EMAIL")
                                         .unwrap_or_else(|_| "contato@dadg.com.br".into()),
+            smtp_host:              env::var("SMTP_HOST").ok(),
+            smtp_port:              env::var("SMTP_PORT")
+                                        .ok()
+                                        .and_then(|v| v.parse().ok())
+                                        .unwrap_or(587),
+            smtp_username:          env::var("SMTP_USERNAME").ok(),
+            smtp_password:          env::var("SMTP_PASSWORD").ok(),
+            smtp_from:              env::var("SMTP_FROM").ok(),
             lab_nome:      env::var("LAB_NOME").unwrap_or_else(|_| "Laboratório de Prótese".into()),
             lab_cnpj:      env::var("LAB_CNPJ").unwrap_or_else(|_| "00.000.000/0001-00".into()),
             lab_endereco:  env::var("LAB_ENDERECO").unwrap_or_else(|_| "Endereço do laboratório".into()),
