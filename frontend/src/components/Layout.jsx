@@ -20,7 +20,7 @@ export default function Layout() {
   const { usuario, logout } = useAuth();
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen min-w-[1200px] flex bg-porcelain">
       <aside className="w-64 shrink-0 bg-teal-dark text-white flex flex-col">
         <div className="flex items-center gap-2 px-6 py-6 border-b border-white/10">
           <Stethoscope size={22} className="text-white/80" />
@@ -66,7 +66,7 @@ export default function Layout() {
       </aside>
 
       <main className="flex-1 bg-porcelain min-h-screen overflow-y-auto">
-        <div className="max-w-6xl mx-auto px-8 py-8">
+        <div className="max-w-[1400px] mx-auto px-8 py-8">
           <Outlet />
         </div>
       </main>

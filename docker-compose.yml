@@ -1,14 +1,29 @@
 version: "3.9"
 
 services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: lab_facil
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
   backend:
     build: ./backend
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=${DATABASE_URL}
-      - JWT_SECRET=${JWT_SECRET:-lab-facil-rust-chave-secreta-desenvolvimento-2026-super-segura}
-      - CORS_ORIGIN=http://localhost:5173
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/lab_facil
+      JWT_SECRET: ${JWT_SECRET:-lab-facil-rust-chave-secreta-desenvolvimento-2026-super-segura}
+      CORS_ORIGIN: http://localhost:5173
+      APROVACAO_EMAIL: ${APROVACAO_EMAIL:-contato@dadg.com.br}
+    depends_on:
+      - db
 
   frontend:
     build: ./frontend
@@ -16,3 +31,6 @@ services:
       - "5173:80"
     depends_on:
       - backend
+
+volumes:
+  postgres_data:

@@ -37,7 +37,7 @@ export default function OrdensServico() {
   const hoje = new Date().toISOString().slice(0, 10);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 min-w-[980px]">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-display text-2xl">Ordens de Serviço</h1>
@@ -77,7 +77,7 @@ export default function OrdensServico() {
       </div>
 
       <div className="card overflow-hidden">
-        <table className="w-full text-sm">
+        <table className="w-full min-w-[980px] text-sm">
           <thead>
             <tr className="border-b border-line text-left text-ink/50 text-xs uppercase tracking-wide">
               <th className="px-5 py-3 font-medium">OS</th>

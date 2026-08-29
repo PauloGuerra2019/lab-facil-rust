@@ -7,7 +7,7 @@ use std::sync::Arc;
 use crate::{
     auth::{criar_token, verificar_senha, Claims},
     error::{AppError, Result},
-    models::Usuario,
+    models::{SolicitacaoAcessoPayload, Usuario},
     AppState,
 };
 
@@ -22,6 +22,12 @@ pub struct TokenResponse {
     pub access_token: String,
     pub token_type:   String,
     pub usuario:      UsuarioOut,
+}
+
+#[derive(Serialize)]
+pub struct SolicitacaoAcessoResponse {
+    pub sucesso:  bool,
+    pub mensagem: String,
 }
 
 #[derive(Serialize)]
@@ -73,6 +79,62 @@ pub async fn login(
         access_token: token,
         token_type: "bearer".into(),
         usuario: usuario.into(),
+    }))
+}
+
+/// POST /auth/solicitar-acesso
+/// Registra uma solicitação de cadastro e aguarda aprovação manual.
+pub async fn solicitar_acesso(
+    State(state): State<Arc<AppState>>,
+    Json(payload): Json<SolicitacaoAcessoPayload>,
+) -> Result<Json<SolicitacaoAcessoResponse>> {
+    let nome = payload.nome.trim();
+    let email = payload.email.trim();
+
+    if nome.is_empty() || email.is_empty() {
+        return Err(AppError::BadRequest("Nome e e-mail são obrigatórios.".into()));
+    }
+
+    if !email.contains('@') || !email.contains('.') {
+        return Err(AppError::BadRequest("Informe um e-mail válido.".into()));
+    }
+
+    let existente = sqlx::query_scalar::<_, bool>(
+        "SELECT EXISTS(SELECT 1 FROM solicitacoes_acesso WHERE email = $1 AND status = 'pendente')",
+    )
+    .bind(email)
+    .fetch_one(&state.db)
+    .await?;
+
+    if existente {
+        return Err(AppError::Conflict("Já existe uma solicitação pendente para este e-mail.".into()));
+    }
+
+    let empresa = payload.empresa.as_deref().map(str::trim).filter(|v| !v.is_empty());
+    let telefone = payload.telefone.as_deref().map(str::trim).filter(|v| !v.is_empty());
+    let mensagem = payload.mensagem.as_deref().map(str::trim).filter(|v| !v.is_empty());
+
+    sqlx::query(
+        "INSERT INTO solicitacoes_acesso (nome, email, empresa, telefone, mensagem, status, criado_em)
+         VALUES ($1, $2, $3, $4, $5, 'pendente', NOW())",
+    )
+    .bind(nome)
+    .bind(email)
+    .bind(empresa)
+    .bind(telefone)
+    .bind(mensagem)
+    .execute(&state.db)
+    .await?;
+
+    tracing::info!(
+        "Nova solicitação de acesso recebida para {} (aprovação por: {})",
+        email,
+        state.config.aprovacao_email
+    );
+
+    Ok(Json(SolicitacaoAcessoResponse {
+        sucesso: true,
+        mensagem: "Solicitação enviada com sucesso. A aprovação será realizada por e-mail.".into(),
     }))
 }
 

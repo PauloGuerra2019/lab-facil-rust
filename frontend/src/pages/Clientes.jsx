@@ -65,7 +65,7 @@ export default function Clientes() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 min-w-[980px]">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-display text-2xl">Clientes</h1>
@@ -88,7 +88,7 @@ export default function Clientes() {
       </div>
 
       <div className="card overflow-hidden">
-        <table className="w-full text-sm">
+        <table className="w-full min-w-[980px] text-sm">
           <thead>
             <tr className="border-b border-line text-left text-ink/50 text-xs uppercase tracking-wide">
               <th className="px-5 py-3 font-medium">Nome</th>

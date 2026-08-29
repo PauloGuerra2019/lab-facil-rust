@@ -7,6 +7,7 @@ pub struct Config {
     pub jwt_secret:                String,
     pub jwt_expiration_hours:      u64,
     pub cors_origin:               String,
+    pub aprovacao_email:           String,
 
     // Dados do laboratório (usados no PDF/recibo)
     pub lab_nome:      String,
@@ -30,6 +31,8 @@ impl Config {
                                         .unwrap_or(12),
             cors_origin:            env::var("CORS_ORIGIN")
                                         .unwrap_or_else(|_| "http://localhost:5173".into()),
+            aprovacao_email:        env::var("APROVACAO_EMAIL")
+                                        .unwrap_or_else(|_| "contato@dadg.com.br".into()),
             lab_nome:      env::var("LAB_NOME").unwrap_or_else(|_| "Laboratório de Prótese".into()),
             lab_cnpj:      env::var("LAB_CNPJ").unwrap_or_else(|_| "00.000.000/0001-00".into()),
             lab_endereco:  env::var("LAB_ENDERECO").unwrap_or_else(|_| "Endereço do laboratório".into()),

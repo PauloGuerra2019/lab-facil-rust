@@ -3,9 +3,14 @@
 @tailwind utilities;
 
 @layer base {
-  body {
-    @apply text-ink antialiased;
+  html, body, #root {
+    min-height: 100%;
   }
+
+  body {
+    @apply min-w-[1200px] overflow-x-auto bg-porcelain text-ink antialiased;
+  }
+
   h1, h2, h3 {
     @apply font-display;
   }
