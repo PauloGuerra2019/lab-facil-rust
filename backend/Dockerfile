@@ -20,7 +20,8 @@ RUN service postgresql start \
 	&& su postgres -c "createdb -O sqlx sqlx_build" \
 	&& PGPASSWORD=sqlx psql -h 127.0.0.1 -U sqlx -d sqlx_build -f migrations/001_initial.sql \
 	&& PGPASSWORD=sqlx psql -h 127.0.0.1 -U sqlx -d sqlx_build -f migrations/002_nfse.sql \
-	&& PGPASSWORD=sqlx psql -h 127.0.0.1 -U sqlx -d sqlx_build -f migrations/003_solicitacoes_acesso.sql
+	&& PGPASSWORD=sqlx psql -h 127.0.0.1 -U sqlx -d sqlx_build -f migrations/003_solicitacoes_acesso.sql \
+	&& PGPASSWORD=sqlx psql -h 127.0.0.1 -U sqlx -d sqlx_build -f migrations/004_solicitacoes_acesso_updates.sql
 ENV DATABASE_URL=postgresql://sqlx:sqlx@127.0.0.1:5432/sqlx_build
 RUN touch src/main.rs && cargo build --release
 
