@@ -178,24 +178,20 @@ pub async fn solicitar_acesso(
         return Err(AppError::BadRequest("Informe um e-mail válido.".into()));
     }
 
-    let existente = sqlx::query_scalar::<_, bool>(
-        "SELECT EXISTS(SELECT 1 FROM solicitacoes_acesso WHERE email = $1 AND status = 'pendente')",
-    )
-    .bind(email)
-    .fetch_one(&state.db)
-    .await?;
-
-    if existente {
-        return Err(AppError::Conflict("Já existe uma solicitação pendente para este e-mail.".into()));
-    }
-
     let empresa = payload.empresa.as_deref().map(str::trim).filter(|v| !v.is_empty());
     let telefone = payload.telefone.as_deref().map(str::trim).filter(|v| !v.is_empty());
     let mensagem = payload.mensagem.as_deref().map(str::trim).filter(|v| !v.is_empty());
 
+    // Tenta fazer INSERT; se já existir (constraint), atualiza em vez de bloquear
     sqlx::query(
         "INSERT INTO solicitacoes_acesso (nome, email, empresa, telefone, mensagem, status, criado_em)
-         VALUES ($1, $2, $3, $4, $5, 'pendente', NOW())",
+         VALUES ($1, $2, $3, $4, $5, 'pendente', NOW())
+         ON CONFLICT (email) DO UPDATE SET
+           nome = $1,
+           empresa = $3,
+           telefone = $4,
+           mensagem = $5,
+           atualizacao_em = NOW()",
     )
     .bind(nome)
     .bind(email)
