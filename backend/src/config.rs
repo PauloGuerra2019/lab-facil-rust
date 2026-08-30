@@ -7,7 +7,6 @@ pub struct Config {
     pub jwt_secret:                String,
     pub jwt_expiration_hours:      u64,
     pub cors_origin:               String,
-    pub aprovacao_email:           String,
     pub smtp_host:                 Option<String>,
     pub smtp_port:                 u16,
     pub smtp_username:             Option<String>,
@@ -36,8 +35,6 @@ impl Config {
                                         .unwrap_or(12),
             cors_origin:            env::var("CORS_ORIGIN")
                                         .unwrap_or_else(|_| "http://localhost:5173".into()),
-            aprovacao_email:        env::var("APROVACAO_EMAIL")
-                                        .unwrap_or_else(|_| "contato@dadg.com.br".into()),
             smtp_host:              env::var("SMTP_HOST").ok(),
             smtp_port:              env::var("SMTP_PORT")
                                         .ok()

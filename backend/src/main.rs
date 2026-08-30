@@ -82,7 +82,6 @@ async fn main() -> anyhow::Result<()> {
         // Auth
         .route("/auth/login", post(routes::auth::login))
         .route("/auth/me",    get(routes::auth::me))
-        .route("/auth/solicitar-acesso", post(routes::auth::solicitar_acesso))
 
         // Clientes
         .route("/clientes",     get(routes::clientes::listar).post(routes::clientes::criar))
