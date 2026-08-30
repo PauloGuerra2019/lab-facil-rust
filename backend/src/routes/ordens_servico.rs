@@ -402,6 +402,28 @@ pub async fn gerar_recibo(
     Ok((headers, pdf_bytes).into_response())
 }
 
+fn sanitizar_texto_pdf(s: &str) -> String {
+    s.chars()
+        .map(|c| match c {
+            'á' | 'à' | 'ã' | 'â' | 'ä' => 'a',
+            'Á' | 'À' | 'Ã' | 'Â' | 'Ä' => 'A',
+            'é' | 'è' | 'ê' | 'ë' => 'e',
+            'É' | 'È' | 'Ê' | 'Ë' => 'E',
+            'í' | 'ì' | 'î' | 'ï' => 'i',
+            'Í' | 'Ì' | 'Î' | 'Ï' => 'I',
+            'ó' | 'ò' | 'õ' | 'ô' | 'ö' => 'o',
+            'Ó' | 'Ò' | 'Õ' | 'Ô' | 'Ö' => 'O',
+            'ú' | 'ù' | 'û' | 'ü' => 'u',
+            'Ú' | 'Ù' | 'Û' | 'Ü' => 'U',
+            'ç' => 'c',
+            'Ç' => 'C',
+            'ñ' => 'n',
+            'Ñ' => 'N',
+            other => other,
+        })
+        .collect()
+}
+
 fn renderizar_pdf_recibo(config: &crate::config::Config, os: &OrdemServicoOut) -> Result<Vec<u8>> {
     use printpdf::*;
 
@@ -418,26 +440,26 @@ fn renderizar_pdf_recibo(config: &crate::config::Config, os: &OrdemServicoOut) -
 
     // Cabeçalho
     current_layer.begin_text_section();
-    current_layer.set_font(&font_bold, 20.0);
+    current_layer.set_font(&font_bold, 18.0);
     current_layer.set_text_cursor(Mm(20.0), Mm(270.0));
-    current_layer.write_text(&config.lab_nome, &font_bold);
+    current_layer.write_text(sanitizar_texto_pdf(&config.lab_nome), &font_bold);
     current_layer.end_text_section();
 
     current_layer.begin_text_section();
     current_layer.set_font(&font_regular, 10.0);
     current_layer.set_text_cursor(Mm(20.0), Mm(262.0));
-    current_layer.write_text(format!("CNPJ: {} | Tel: {}", config.lab_cnpj, config.lab_telefone), &font_regular);
+    current_layer.write_text(sanitizar_texto_pdf(&format!("CNPJ: {} | Tel: {}", config.lab_cnpj, config.lab_telefone)), &font_regular);
     current_layer.end_text_section();
 
     current_layer.begin_text_section();
     current_layer.set_font(&font_regular, 10.0);
     current_layer.set_text_cursor(Mm(20.0), Mm(256.0));
-    current_layer.write_text(&config.lab_endereco, &font_regular);
+    current_layer.write_text(sanitizar_texto_pdf(&config.lab_endereco), &font_regular);
     current_layer.end_text_section();
 
     // Título
     current_layer.begin_text_section();
-    current_layer.set_font(&font_bold, 16.0);
+    current_layer.set_font(&font_bold, 15.0);
     current_layer.set_text_cursor(Mm(20.0), Mm(240.0));
     current_layer.write_text(format!("ORDEM DE SERVICO #{:05}", os.numero), &font_bold);
     current_layer.end_text_section();
@@ -447,14 +469,14 @@ fn renderizar_pdf_recibo(config: &crate::config::Config, os: &OrdemServicoOut) -
     current_layer.begin_text_section();
     current_layer.set_font(&font_regular, 11.0);
     current_layer.set_text_cursor(Mm(20.0), Mm(y));
-    current_layer.write_text(format!("Cliente: {}", os.cliente.nome), &font_regular);
+    current_layer.write_text(sanitizar_texto_pdf(&format!("Cliente: {}", os.cliente.nome)), &font_regular);
     current_layer.end_text_section();
 
     y -= 6.0;
     current_layer.begin_text_section();
     current_layer.set_font(&font_regular, 11.0);
     current_layer.set_text_cursor(Mm(20.0), Mm(y));
-    current_layer.write_text(format!("Paciente: {} | Cor/Escala: {}", os.paciente_nome.as_deref().unwrap_or("-"), os.cor_dente.as_deref().unwrap_or("-")), &font_regular);
+    current_layer.write_text(sanitizar_texto_pdf(&format!("Paciente: {} | Cor/Escala: {}", os.paciente_nome.as_deref().unwrap_or("-"), os.cor_dente.as_deref().unwrap_or("-"))), &font_regular);
     current_layer.end_text_section();
 
     y -= 6.0;
@@ -478,7 +500,7 @@ fn renderizar_pdf_recibo(config: &crate::config::Config, os: &OrdemServicoOut) -
         current_layer.set_font(&font_regular, 10.0);
         current_layer.set_text_cursor(Mm(20.0), Mm(y));
         let dente = if let Some(ref d) = item.dente_arcada { format!(" ({})", d) } else { "".into() };
-        current_layer.write_text(format!("- {}{} | Qtd: {} | R$ {:.2} un | Total: R$ {:.2}", item.tipo_servico.nome, dente, item.quantidade, item.valor_unitario, item.valor_total), &font_regular);
+        current_layer.write_text(sanitizar_texto_pdf(&format!("- {}{} | Qtd: {} | R$ {:.2} un | Total: R$ {:.2}", item.tipo_servico.nome, dente, item.quantidade, item.valor_unitario, item.valor_total)), &font_regular);
         current_layer.end_text_section();
         y -= 6.0;
     }

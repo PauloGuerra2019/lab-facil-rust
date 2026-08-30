@@ -46,10 +46,10 @@ impl Config {
             smtp_username:          env::var("SMTP_USERNAME").ok(),
             smtp_password:          env::var("SMTP_PASSWORD").ok(),
             smtp_from:              env::var("SMTP_FROM").ok(),
-            lab_nome:      env::var("LAB_NOME").unwrap_or_else(|_| "Laboratório de Prótese".into()),
-            lab_cnpj:      env::var("LAB_CNPJ").unwrap_or_else(|_| "00.000.000/0001-00".into()),
-            lab_endereco:  env::var("LAB_ENDERECO").unwrap_or_else(|_| "Endereço do laboratório".into()),
-            lab_telefone:  env::var("LAB_TELEFONE").unwrap_or_else(|_| "(00) 00000-0000".into()),
+            lab_nome:      env::var("LAB_NOME").unwrap_or_else(|_| "DADG - Laboratório de prótese dentária".into()),
+            lab_cnpj:      env::var("LAB_CNPJ").unwrap_or_else(|_| "64.329.994/0001-77".into()),
+            lab_endereco:  env::var("LAB_ENDERECO").unwrap_or_else(|_| "Rua Carlos Luvison, 376 - Parque Bela Vista - Votorantim/SP - CEP 18110-435".into()),
+            lab_telefone:  env::var("LAB_TELEFONE").unwrap_or_else(|_| "(15) 99719-7692".into()),
         }
     }
 }
