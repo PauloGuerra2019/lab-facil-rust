@@ -46,7 +46,11 @@ impl IntoResponse for AppError {
             AppError::Conflict(msg)           => (StatusCode::CONFLICT, msg.clone()),
             AppError::Sqlx(e)                 => {
                 tracing::error!("SQLx error: {e}");
-                (StatusCode::INTERNAL_SERVER_ERROR, "Erro de banco de dados".into())
+                let detail = match e {
+                    sqlx::Error::Database(db_err) => format!("Erro de banco de dados: {}", db_err.message()),
+                    _ => format!("Erro de banco de dados: {e}"),
+                };
+                (StatusCode::INTERNAL_SERVER_ERROR, detail)
             }
             AppError::Anyhow(e)               => {
                 tracing::error!("Internal error: {e}");
