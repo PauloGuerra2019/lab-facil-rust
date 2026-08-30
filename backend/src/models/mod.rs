@@ -38,28 +38,7 @@ pub struct ClientePayload {
     pub observacoes: Option<String>,
 }
 
-// ── Solicitação de acesso ─────────────────────────────────────────────────────
 
-#[derive(Debug, FromRow, Serialize)]
-pub struct SolicitacaoAcesso {
-    pub id:         i64,
-    pub nome:       String,
-    pub email:      String,
-    pub empresa:    Option<String>,
-    pub telefone:   Option<String>,
-    pub mensagem:   Option<String>,
-    pub status:     String,
-    pub criado_em:  chrono::DateTime<chrono::Utc>,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct SolicitacaoAcessoPayload {
-    pub nome:     String,
-    pub email:    String,
-    pub empresa:  Option<String>,
-    pub telefone: Option<String>,
-    pub mensagem: Option<String>,
-}
 
 // ── Tipo de Serviço ───────────────────────────────────────────────────────────
 

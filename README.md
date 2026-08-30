@@ -115,9 +115,9 @@ DATABASE_URL=<URI PostgreSQL do Supabase>
 JWT_SECRET=<chave longa e aleatória>
 CORS_ORIGIN=https://<seu-projeto>.vercel.app
 LAB_NOME=DADG - Laboratório de prótese dentária
-LAB_CNPJ=00.000.000/0001-00
-LAB_ENDERECO=Rua do laboratório
-LAB_TELEFONE=(15) 90000-0000
+LAB_CNPJ=64.329.994/0001-77 
+LAB_ENDERECO=Rua Carlos Luvison, 376 - Parque Bela Vista - Votorantim/SP - CEP 18110-435
+LAB_TELEFONE=(15) 99719-7692
 ```
 
 O servidor usa automaticamente a variável `PORT` fornecida pelo Render.
