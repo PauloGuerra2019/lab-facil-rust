@@ -12,6 +12,7 @@ export default function Clientes() {
   const [editando, setEditando] = useState(null);
   const [form, setForm] = useState(CLIENTE_VAZIO);
   const [salvando, setSalvando] = useState(false);
+  const [erro, setErro] = useState("");
 
   async function carregar() {
     const { data } = await api.get("/clientes", { params: { busca: busca || undefined } });
@@ -26,6 +27,7 @@ export default function Clientes() {
   function abrirNovo() {
     setEditando(null);
     setForm(CLIENTE_VAZIO);
+    setErro("");
     setModalAberto(true);
   }
 
@@ -39,20 +41,34 @@ export default function Clientes() {
       endereco: cliente.endereco || "",
       observacoes: cliente.observacoes || "",
     });
+    setErro("");
     setModalAberto(true);
   }
 
   async function salvar(e) {
     e.preventDefault();
+    setErro("");
     setSalvando(true);
+
+    const payload = {
+      nome: form.nome.trim(),
+      cpf_cnpj: form.cpf_cnpj.trim() || undefined,
+      telefone: form.telefone.trim() || undefined,
+      email: form.email.trim() || undefined,
+      endereco: form.endereco.trim() || undefined,
+      observacoes: form.observacoes.trim() || undefined,
+    };
+
     try {
       if (editando) {
-        await api.put(`/clientes/${editando.id}`, form);
+        await api.put(`/clientes/${editando.id}`, payload);
       } else {
-        await api.post("/clientes", form);
+        await api.post("/clientes", payload);
       }
       setModalAberto(false);
       carregar();
+    } catch (err) {
+      setErro(err.response?.data?.detail || err.message || "Não foi possível salvar o cliente.");
     } finally {
       setSalvando(false);
     }
@@ -218,6 +234,9 @@ export default function Clientes() {
                 onChange={(e) => setForm({ ...form, observacoes: e.target.value })}
               />
             </div>
+
+            {erro && <p className="text-sm text-brick">{erro}</p>}
+
             <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-2">
               <button type="button" onClick={() => setModalAberto(false)} className="btn-secondary">
                 Cancelar

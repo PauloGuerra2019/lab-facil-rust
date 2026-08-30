@@ -14,14 +14,16 @@ use crate::{
     AppState,
 };
 
+fn limpar_opt(s: Option<String>) -> Option<String> {
+    s.map(|v| v.trim().to_string()).filter(|v| !v.is_empty())
+}
+
 /// GET /clientes
 pub async fn listar(
     State(state): State<Arc<AppState>>,
     Query(filtro): Query<ClienteFiltro>,
     _claims: Claims,
 ) -> Result<Json<Vec<Cliente>>> {
-    // SQLx não suporta queries 100% dinâmicas com macros compiladas, então
-    // montamos a query manualmente para suportar filtros opcionais.
     let apenas_ativos_num: i64 = if filtro.apenas_ativos.unwrap_or(true) { 1 } else { 0 };
     let busca = filtro.busca.as_deref().map(|b| format!("%{b}%"));
 
@@ -30,8 +32,8 @@ pub async fn listar(
         SELECT id as "id!", nome, cpf_cnpj, telefone, email, endereco, observacoes,
                ativo as "ativo!: bool"
         FROM clientes
-                WHERE ($1 = 0 OR ativo = TRUE)
-                    AND ($2 IS NULL OR nome LIKE $3 OR cpf_cnpj LIKE $4)
+        WHERE ($1 = 0 OR ativo = TRUE)
+          AND ($2 IS NULL OR nome LIKE $3 OR cpf_cnpj LIKE $4)
         ORDER BY nome
         "#,
     )
@@ -51,18 +53,23 @@ pub async fn criar(
     _claims: Claims,
     Json(payload): Json<ClientePayload>,
 ) -> Result<(StatusCode, Json<Cliente>)> {
+    let nome = payload.nome.trim().to_string();
+    if nome.is_empty() {
+        return Err(AppError::BadRequest("O nome do cliente é obrigatório.".into()));
+    }
+
     let id = sqlx::query_scalar::<_, i64>(
         "INSERT INTO clientes (nome, cpf_cnpj, telefone, email, endereco, observacoes)
          VALUES ($1, $2, $3, $4, $5, $6)
-            RETURNING id"
+         RETURNING id",
     )
-        .bind(payload.nome)
-        .bind(payload.cpf_cnpj)
-        .bind(payload.telefone)
-        .bind(payload.email)
-        .bind(payload.endereco)
-        .bind(payload.observacoes)
-        .fetch_one(&state.db)
+    .bind(nome)
+    .bind(limpar_opt(payload.cpf_cnpj))
+    .bind(limpar_opt(payload.telefone))
+    .bind(limpar_opt(payload.email))
+    .bind(limpar_opt(payload.endereco))
+    .bind(limpar_opt(payload.observacoes))
+    .fetch_one(&state.db)
     .await?;
 
     let cliente = buscar_por_id(&state, id).await?;
@@ -86,16 +93,21 @@ pub async fn atualizar(
     _claims: Claims,
     Json(payload): Json<ClientePayload>,
 ) -> Result<Json<Cliente>> {
+    let nome = payload.nome.trim().to_string();
+    if nome.is_empty() {
+        return Err(AppError::BadRequest("O nome do cliente é obrigatório.".into()));
+    }
+
     sqlx::query(
         "UPDATE clientes SET nome=$1, cpf_cnpj=$2, telefone=$3, email=$4, endereco=$5, observacoes=$6
          WHERE id=$7",
     )
-    .bind(payload.nome)
-    .bind(payload.cpf_cnpj)
-    .bind(payload.telefone)
-    .bind(payload.email)
-    .bind(payload.endereco)
-    .bind(payload.observacoes)
+    .bind(nome)
+    .bind(limpar_opt(payload.cpf_cnpj))
+    .bind(limpar_opt(payload.telefone))
+    .bind(limpar_opt(payload.email))
+    .bind(limpar_opt(payload.endereco))
+    .bind(limpar_opt(payload.observacoes))
     .bind(id)
     .execute(&state.db)
     .await?;
@@ -128,9 +140,9 @@ async fn buscar_por_id(state: &AppState, id: i64) -> Result<Cliente> {
     sqlx::query_as::<_, Cliente>(
         r#"SELECT id as "id!", nome, cpf_cnpj, telefone, email, endereco, observacoes,
                   ativo as "ativo!: bool"
-            FROM clientes WHERE id = $1"#
+           FROM clientes WHERE id = $1"#,
     )
-        .bind(id)
+    .bind(id)
     .fetch_optional(&state.db)
     .await?
     .ok_or_else(|| AppError::NotFound(format!("Cliente {id} não encontrado")))
