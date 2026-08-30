@@ -29,8 +29,7 @@ pub async fn listar(
 
     let clientes = sqlx::query_as::<_, Cliente>(
         r#"
-        SELECT id as "id!", nome, cpf_cnpj, telefone, email, endereco, observacoes,
-               ativo as "ativo!: bool"
+        SELECT id, nome, cpf_cnpj, telefone, email, endereco, observacoes, ativo
         FROM clientes
         WHERE ($1 = 0 OR ativo = TRUE)
           AND ($2 IS NULL OR nome LIKE $3 OR cpf_cnpj LIKE $4)
@@ -138,8 +137,7 @@ pub async fn desativar(
 
 async fn buscar_por_id(state: &AppState, id: i64) -> Result<Cliente> {
     sqlx::query_as::<_, Cliente>(
-        r#"SELECT id as "id!", nome, cpf_cnpj, telefone, email, endereco, observacoes,
-                  ativo as "ativo!: bool"
+        r#"SELECT id, nome, cpf_cnpj, telefone, email, endereco, observacoes, ativo
            FROM clientes WHERE id = $1"#,
     )
     .bind(id)
