@@ -23,7 +23,7 @@ RUN service postgresql start \
 	&& PGPASSWORD=sqlx psql -h 127.0.0.1 -U sqlx -d sqlx_build -f migrations/003_solicitacoes_acesso.sql \
 	&& PGPASSWORD=sqlx psql -h 127.0.0.1 -U sqlx -d sqlx_build -f migrations/004_solicitacoes_acesso_updates.sql || true
 ENV DATABASE_URL=postgresql://sqlx:sqlx@127.0.0.1:5432/sqlx_build
-RUN touch src/main.rs && cargo build --release 2>&1 | grep -E "(Finished|error:)" || true
+RUN touch src/main.rs && cargo build --release
 
 # Stage 2: imagem final ultra-slim (~8 MB)
 FROM debian:bookworm-slim
