@@ -176,31 +176,32 @@ export default function OrdemDetalhe() {
   }
 
   return (
-    <div className="max-w-3xl space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="max-w-3xl space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl">
+          <h1 className="font-display text-xl sm:text-2xl">
             {editando ? `OS #${String(ordem?.numero || "").padStart(5, "0")}` : "Nova Ordem de Serviço"}
           </h1>
           <p className="text-sm text-ink/50">Registro de entrada, itens e valores do trabalho</p>
         </div>
         {editando && (
-          <div className="flex items-center gap-2">
-            <button type="button" onClick={excluirOrdem} className="btn-secondary text-brick hover:bg-brick/10">
+          <div className="flex items-center gap-2 flex-wrap">
+            <button type="button" onClick={excluirOrdem} className="btn-secondary text-brick hover:bg-brick/10 text-xs sm:text-sm">
               <Trash2 size={16} />
-              Excluir OS
+              <span className="hidden sm:inline">Excluir OS</span>
+              <span className="sm:hidden">Excluir</span>
             </button>
-            <button type="button" onClick={baixarRecibo} disabled={gerandoPdf} className="btn-secondary">
+            <button type="button" onClick={baixarRecibo} disabled={gerandoPdf} className="btn-secondary text-xs sm:text-sm">
               <FileDown size={16} />
-              {gerandoPdf ? "Gerando…" : "Baixar recibo (PDF)"}
+              {gerandoPdf ? "Gerando…" : <><span className="hidden sm:inline">Baixar recibo (PDF)</span><span className="sm:hidden">Recibo</span></>}
             </button>
           </div>
         )}
       </div>
 
       {editando && ordem && (
-        <section className="card p-6 space-y-4">
-          <div className="flex items-start justify-between gap-4">
+        <section className="card p-4 sm:p-6 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
             <div>
               <div className="flex items-center gap-2">
                 <ReceiptText size={18} className="text-teal" />
@@ -211,7 +212,7 @@ export default function OrdemDetalhe() {
               </p>
             </div>
             {ordem.nfse_status !== "emitida" && (
-              <button type="button" onClick={emitirNfse} disabled={nfseEmitindo} className="btn-primary">
+              <button type="button" onClick={emitirNfse} disabled={nfseEmitindo} className="btn-primary self-start">
                 <ReceiptText size={16} />
                 {nfseEmitindo ? "Emitindo…" : "Emitir NFS-e"}
               </button>
@@ -244,9 +245,9 @@ export default function OrdemDetalhe() {
         </section>
       )}
 
-      <form onSubmit={salvar} className="space-y-6">
-        <div className="card p-6 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+      <form onSubmit={salvar} className="space-y-4 sm:space-y-6">
+        <div className="card p-4 sm:p-6 space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="label">Cliente (dentista/clínica) *</label>
               <select
@@ -273,7 +274,7 @@ export default function OrdemDetalhe() {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="label">Data de entrada *</label>
               <input
@@ -304,7 +305,7 @@ export default function OrdemDetalhe() {
           </div>
 
           {editando && (
-            <div className="grid grid-cols-3 gap-4 pt-2 border-t border-line">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 border-t border-line">
               <div>
                 <label className="label">Status</label>
                 <select
@@ -356,16 +357,18 @@ export default function OrdemDetalhe() {
           </div>
         </div>
 
-        <div className="card p-6">
+        <div className="card p-4 sm:p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-display text-lg">Serviços</h2>
             <button type="button" onClick={adicionarItem} className="btn-secondary text-xs px-3 py-1.5">
               <Plus size={14} />
-              Adicionar serviço
+              <span className="hidden sm:inline">Adicionar serviço</span>
+              <span className="sm:hidden">Adicionar</span>
             </button>
           </div>
 
-          <div className="space-y-3">
+          {/* Desktop: grid compacto */}
+          <div className="hidden sm:block space-y-3">
             {itens.map((item, index) => (
               <div key={index} className="grid grid-cols-12 gap-2 items-end">
                 <div className="col-span-4">
@@ -428,8 +431,75 @@ export default function OrdemDetalhe() {
             ))}
           </div>
 
+          {/* Mobile: cards empilhados */}
+          <div className="sm:hidden space-y-4">
+            {itens.map((item, index) => (
+              <div key={index} className="border border-line rounded-lg p-3 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-ink/50 uppercase">Serviço {index + 1}</span>
+                  <button
+                    type="button"
+                    onClick={() => removerItem(index)}
+                    className="text-ink/30 hover:text-brick p-1"
+                  >
+                    <Trash2 size={15} />
+                  </button>
+                </div>
+                <div>
+                  <label className="label">Serviço</label>
+                  <select
+                    required
+                    className="input"
+                    value={item.tipo_servico_id}
+                    onChange={(e) => atualizarItem(index, "tipo_servico_id", e.target.value)}
+                  >
+                    {tipos.map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.nome}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="label">Dente(s)/Arcada</label>
+                  <input
+                    className="input"
+                    value={item.dente_arcada}
+                    onChange={(e) => atualizarItem(index, "dente_arcada", e.target.value)}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="label">Qtd.</label>
+                    <input
+                      type="number"
+                      min="1"
+                      className="input"
+                      value={item.quantidade}
+                      onChange={(e) => atualizarItem(index, "quantidade", e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label className="label">Valor unit.</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      className="input"
+                      value={item.valor_unitario}
+                      onChange={(e) => atualizarItem(index, "valor_unitario", e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div className="text-right font-mono text-sm font-medium pt-1 border-t border-line">
+                  {formatoMoeda(item.quantidade * item.valor_unitario)}
+                </div>
+              </div>
+            ))}
+          </div>
+
           <div className="flex justify-end mt-4 pt-4 border-t border-line">
-            <p className="font-display text-xl">
+            <p className="font-display text-lg sm:text-xl">
               Total: <span className="font-mono">{formatoMoeda(valorTotal)}</span>
             </p>
           </div>
@@ -437,7 +507,7 @@ export default function OrdemDetalhe() {
 
         {erro && <p className="text-sm text-brick">{erro}</p>}
 
-        <div className="flex justify-end gap-3">
+        <div className="flex flex-col-reverse sm:flex-row justify-end gap-3">
           <button type="button" onClick={() => navigate("/ordens")} className="btn-secondary">
             Cancelar
           </button>

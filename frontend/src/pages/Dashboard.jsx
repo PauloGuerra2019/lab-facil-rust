@@ -10,12 +10,12 @@ const formatoMoeda = (v) =>
 
 function CardStat({ icone: Icone, label, valor, destaque }) {
   return (
-    <div className="card p-5">
-      <div className="flex items-center gap-2 text-ink/50 text-xs uppercase tracking-wide mb-3">
+    <div className="card p-4 sm:p-5">
+      <div className="flex items-center gap-2 text-ink/50 text-xs uppercase tracking-wide mb-2 sm:mb-3">
         <Icone size={14} />
         {label}
       </div>
-      <p className={`font-display text-3xl ${destaque ? "text-brick" : "text-ink"}`}>{valor}</p>
+      <p className={`font-display text-2xl sm:text-3xl ${destaque ? "text-brick" : "text-ink"}`}>{valor}</p>
     </div>
   );
 }
@@ -37,18 +37,18 @@ export default function Dashboard() {
   }));
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 sm:space-y-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="font-display text-2xl">Painel</h1>
           <p className="text-sm text-ink/50">Visão geral do laboratório</p>
         </div>
-        <Link to="/ordens/nova" className="btn-primary">
+        <Link to="/ordens/nova" className="btn-primary self-start sm:self-auto">
           Nova Ordem de Serviço
         </Link>
       </div>
 
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <CardStat icone={ClipboardList} label="OS em aberto" valor={stats.total_os_abertas} />
         <CardStat
           icone={AlertTriangle}
@@ -60,8 +60,8 @@ export default function Dashboard() {
         <CardStat icone={Wallet} label="A receber" valor={formatoMoeda(stats.a_receber)} />
       </div>
 
-      <div className="grid grid-cols-3 gap-6">
-        <div className="card p-6 col-span-2">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className="card p-4 sm:p-6 lg:col-span-2">
           <h2 className="font-display text-lg mb-4">Faturamento — últimos 6 meses</h2>
           <ResponsiveContainer width="100%" height={240}>
             <BarChart data={dadosGrafico}>
@@ -74,7 +74,7 @@ export default function Dashboard() {
           </ResponsiveContainer>
         </div>
 
-        <div className="card p-6">
+        <div className="card p-4 sm:p-6">
           <h2 className="font-display text-lg mb-4">OS por status</h2>
           <div className="space-y-3">
             {STATUS_OPTIONS.filter((s) => s.value !== "cancelado").map((s) => (

@@ -8,7 +8,7 @@
   }
 
   body {
-    @apply overflow-x-auto bg-porcelain text-ink antialiased;
+    @apply overflow-x-hidden bg-porcelain text-ink antialiased;
     min-height: 100vh;
   }
 

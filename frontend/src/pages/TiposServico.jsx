@@ -69,25 +69,27 @@ export default function TiposServico() {
   }, {});
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="font-display text-2xl">Tipos de Serviço</h1>
           <p className="text-sm text-ink/50">Catálogo de serviços e valores padrão do laboratório</p>
         </div>
-        <button onClick={abrirNovo} className="btn-primary">
+        <button onClick={abrirNovo} className="btn-primary self-start sm:self-auto">
           <Plus size={16} />
           Novo Serviço
         </button>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {Object.entries(porCategoria).map(([categoria, itens]) => (
           <div key={categoria} className="card overflow-hidden">
-            <div className="px-5 py-3 border-b border-line bg-porcelain/60">
+            <div className="px-4 sm:px-5 py-3 border-b border-line bg-porcelain/60">
               <h3 className="text-xs font-medium uppercase tracking-wide text-ink/50">{categoria}</h3>
             </div>
-            <table className="w-full text-sm">
+
+            {/* Desktop: tabela */}
+            <table className="hidden sm:table w-full text-sm">
               <tbody>
                 {itens.map((t) => (
                   <tr key={t.id} className="border-b border-line last:border-0 hover:bg-porcelain/40">
@@ -108,6 +110,31 @@ export default function TiposServico() {
                 ))}
               </tbody>
             </table>
+
+            {/* Mobile: lista */}
+            <div className="sm:hidden divide-y divide-line">
+              {itens.map((t) => (
+                <div key={t.id} className="px-4 py-3">
+                  <div className="flex items-start justify-between">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-sm">{t.nome}</p>
+                      <div className="flex items-center gap-3 mt-1 text-xs text-ink/60">
+                        <span>{t.prazo_dias} dias</span>
+                        <span className="font-mono font-medium text-ink">{formatoMoeda(t.valor_padrao)}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 ml-3 shrink-0">
+                      <button onClick={() => abrirEdicao(t)} className="text-ink/40 hover:text-teal p-1">
+                        <Pencil size={15} />
+                      </button>
+                      <button onClick={() => remover(t)} className="text-ink/40 hover:text-brick p-1">
+                        <Trash2 size={15} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         ))}
         {tipos.length === 0 && <p className="text-ink/40 text-center py-10">Nenhum tipo de serviço cadastrado.</p>}
@@ -134,7 +161,7 @@ export default function TiposServico() {
                 onChange={(e) => setForm({ ...form, categoria: e.target.value })}
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="label">Valor padrão (R$) *</label>
                 <input
@@ -158,7 +185,7 @@ export default function TiposServico() {
                 />
               </div>
             </div>
-            <div className="flex justify-end gap-3 pt-2">
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-2">
               <button type="button" onClick={() => setModalAberto(false)} className="btn-secondary">
                 Cancelar
               </button>

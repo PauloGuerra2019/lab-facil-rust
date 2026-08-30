@@ -73,14 +73,14 @@ export default function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-teal-dark px-4">
       <div className="w-full max-w-md">
-        <div className="flex items-center gap-2 justify-center mb-8 text-white">
+        <div className="flex items-center gap-2 justify-center mb-6 sm:mb-8 text-white">
           <Stethoscope size={26} />
-          <span className="font-display text-xl text-center">DADG - Laboratório de prótese dentária</span>
+          <span className="font-display text-lg sm:text-xl text-center">DADG - Laboratório de prótese dentária</span>
         </div>
 
         <form
           onSubmit={modo === "login" ? handleSubmit : handleSolicitacao}
-          className="card p-7 space-y-4"
+          className="card p-5 sm:p-7 space-y-4"
         >
           <div>
             <h1 className="font-display text-xl mb-1">
@@ -143,7 +143,7 @@ export default function Login() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="label">Empresa</label>
                   <input
